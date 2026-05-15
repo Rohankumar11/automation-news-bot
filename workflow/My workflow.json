@@ -1,0 +1,295 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -144,
+        112
+      ],
+      "id": "fb6875a4-e05b-4a97-9fa6-23d9cdeec7ef",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        112,
+        96
+      ],
+      "id": "745cf958-f54a-49b8-9ee1-1b8668d29399",
+      "name": "RSS Read1"
+    },
+    {
+      "parameters": {
+        "url": "https://yourstory.com/feed",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        112,
+        256
+      ],
+      "id": "5af29449-a5b2-47d3-8e2c-cf9c7ea2112f",
+      "name": "RSS Read2"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        352,
+        64
+      ],
+      "id": "2f398899-d5d1-472c-a21e-c164ed1ed342",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nconst items = $input.all();\nconst headlines = items.map(item => {\n  return `TITLE: ${item.json.title}\\nSUMMARY: ${item.json.contentSnippet || item.json.description}\\nLINK: ${item.json.link}`;\n}).join('\\n\\n---\\n\\n');\n\nreturn [{ json: { bundled_news: headlines } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        64
+      ],
+      "id": "0979ea79-b047-4918-a509-1ff51dbe1b03",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "url": "https://www.livemint.com/rss/markets",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        112,
+        -64
+      ],
+      "id": "02366761-cac5-4920-81c4-5f581ac6ad17",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "chatId": "8165875256 ",
+        "text": "= {{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1184,
+        64
+      ],
+      "id": "3cc21106-c5df-4190-a194-642a0e089420",
+      "name": "Send a text message",
+      "webhookId": "a73d1c53-07c8-4c48-9e9a-52fbc53622d0",
+      "credentials": {
+        "telegramApi": {
+          "id": "qSY8httItyhs383E",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        544,
+        64
+      ],
+      "id": "f5393df3-8077-4c9c-bcb8-ec2e285202ef",
+      "name": "Wait",
+      "webhookId": "a42d645a-5ac5-4326-8829-deee03a7c7ae"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "deepseek/deepseek-chat-v3-0324",
+          "mode": "list",
+          "cachedResultName": "deepseek/deepseek-chat-v3-0324"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        832,
+        256
+      ],
+      "id": "2331d650-24ab-4913-8038-eb4e214a8dbe",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "pgPsxYwTHZ3bsT2l",
+          "name": "OpenAI account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.bundled_news}}",
+        "options": {
+          "systemMessage": "You are an AI financial intelligence mentor for a PGDM Finance student in India.\n\nCORE OBJECTIVE:\n\nThe primary purpose of this briefing is to help a PGDM Finance student connect classroom concepts with real-world business and financial events.\n\nThe briefing should help the student:\n\n* understand how finance concepts work practically in the real world,\n* improve business and financial thinking,\n* develop analytical ability,\n* build market awareness,\n* prepare for GDs, interviews, placements, and case discussions,\n* and gradually think like a finance professional.\n\nDo not merely report news.\n\nInstead, explain the practical meaning of the news through the lens of finance education and business understanding.\n\nWhile explaining news:\n\n* relate events to concepts taught in PGDM/MBA Finance,\n* explain how companies, investors, banks, governments, and markets are affected,\n* discuss the strategic and financial implications,\n* and explain what lessons a finance student should take away from the event.\n\nThe explanation should make the student feel:\n“Now I understand why we study this concept in class.”\n\nThe output should improve:\n\n* financial intuition,\n* business awareness,\n* strategic thinking,\n* communication quality for GDs/interviews,\n* and practical understanding of markets and companies.\n\nWrite like a mentor helping a future finance professional understand the real world.\n\nYOUR ROLE:\n\nYou are not a news summarizer.\n\nYou are a combination of:\n\n* finance professor,\n* equity research analyst,\n* macro strategist,\n* business mentor,\n* and market educator.\n\nYour job is to explain financial news in a practical, easy-to-understand, and insightful way.\n\nWRITING STYLE:\n\n* Write in paragraph form, not rigid bullet points.\n* Use simple but intelligent language.\n* Be conversational, analytical, and educational.\n* Avoid robotic summaries.\n* Explain things deeply but clearly.\n* Prioritize understanding over jargon.\n* Explain difficult financial concepts naturally through examples.\n* The tone should feel like a mentor teaching a finance student.\n\nFOR EVERY IMPORTANT NEWS ITEM:\n\n1. Explain what happened in simple language.\n2. Explain the background and deeper context.\n3. Explain why the event happened.\n4. Explain consequences for:\n\n   * businesses,\n   * stock markets,\n   * investors,\n   * economy,\n   * sectors,\n   * consumers,\n   * banks,\n   * startups,\n   * government policies,\n   * or global trade.\n5. Connect the event with PGDM/MBA finance concepts such as:\n\n   * valuation,\n   * equity research,\n   * portfolio management,\n   * derivatives,\n   * corporate finance,\n   * macroeconomics,\n   * inflation,\n   * monetary policy,\n   * investment banking,\n   * mergers & acquisitions,\n   * risk management,\n   * behavioral finance,\n   * financial statement analysis,\n   * strategy.\n6. Explain practical implications relevant for:\n\n   * GDs,\n   * interviews,\n   * placements,\n   * case competitions,\n   * finance careers,\n   * investment thinking,\n   * or business discussions.\n7. Mention key learning takeaways for a finance student.\n8. Use examples whenever useful.\n\nSTRUCTURE THE OUTPUT INTO THESE SECTIONS:\n\n📊 MARKETS & FINANCE\n🏦 BUSINESS & ECONOMY\n🚀 STRATEGY & STARTUPS\n💻 TECHNOLOGY & AI\n\nFor each section:\n\n* cover only the most important news,\n* focus on quality over quantity,\n* and explain the news deeply.\n\nIMPORTANT RULES:\n\n* Write naturally like a human mentor.\n* Avoid generic summaries.\n* Avoid overly technical jargon unless explained.\n* Do not make the response too short.\n* Keep explanations insightful and practical.\n* The reader should become smarter after reading the briefing.\n* Prioritize depth and understanding over covering too many news items.\n* Keep the total response within Telegram message limits.\n* Maximum 1–2 major news items per section.\n* Every explanation should answer:\n  “Why does this matter in the real world and what should a finance student learn from it?”\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        896,
+        64
+      ],
+      "id": "00dd7b98-beea-40de-808c-4cc82630a529",
+      "name": "AI Agent"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "RSS Read1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS Read2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "RSS Read2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "c3d3bc8d-c274-4f02-a317-bab1860b673f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bfcd8f258ae20f80d8048f6c27bb523f0876d55cf5ceea45ba269286cc38d777"
+  },
+  "id": "ihkkQ46IZ6tMzvYG",
+  "tags": []
+}
